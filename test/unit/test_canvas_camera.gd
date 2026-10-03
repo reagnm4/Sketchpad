@@ -43,6 +43,23 @@ func test_released_touch_resets_gesture() -> void:
 	assert_eq(camera.zoom, Vector2.ONE)
 
 
+func test_touch_gesture_stays_active_until_all_touches_are_released() -> void:
+	watch_signals(camera)
+	press_touch(0, Vector2(0.0, 0.0))
+	press_touch(1, Vector2(100.0, 0.0))
+
+	assert_true(camera.touch_gesture_active)
+	assert_signal_emit_count(camera, "touch_gesture_started", 1)
+
+	release_touch(1, Vector2(100.0, 0.0))
+	assert_true(camera.touch_gesture_active)
+	assert_signal_not_emitted(camera, "touch_gesture_ended")
+
+	release_touch(0, Vector2(0.0, 0.0))
+	assert_false(camera.touch_gesture_active)
+	assert_signal_emit_count(camera, "touch_gesture_ended", 1)
+
+
 func press_touch(index: int, touch_position: Vector2) -> void:
 	var event := InputEventScreenTouch.new()
 	event.index = index

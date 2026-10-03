@@ -1,4 +1,8 @@
+class_name CanvasCamera
 extends Camera2D
+
+signal touch_gesture_started
+signal touch_gesture_ended
 
 @export var max_zoom: float = 30.0
 @export var min_zoom: float = 0.1
@@ -13,6 +17,7 @@ var is_dragging: bool = false
 var touch_positions: Dictionary[int, Vector2] = {}
 var previous_touch_center: Vector2
 var previous_touch_distance: float = 0.0
+var touch_gesture_active: bool = false
 
 
 func _input(event: InputEvent) -> void:
@@ -37,8 +42,14 @@ func _input(event: InputEvent) -> void:
 func _handle_screen_touch(event: InputEventScreenTouch) -> void:
 	if event.pressed:
 		touch_positions[event.index] = event.position
+		if touch_positions.size() >= 2 and not touch_gesture_active:
+			touch_gesture_active = true
+			touch_gesture_started.emit()
 	else:
 		touch_positions.erase(event.index)
+		if touch_positions.is_empty() and touch_gesture_active:
+			touch_gesture_active = false
+			touch_gesture_ended.emit()
 
 	_reset_touch_gesture()
 
